@@ -1,0 +1,318 @@
+:root {
+  --bg-app: #1D2024;
+  --chrome: #23262B;
+  --chrome-line: #33373E;
+  --paper: #FAFAF7;
+  --grid-line: #C9D3DC;
+  --grid-major: #93A6B8;
+  --ink: #1A2B4C;
+  --amber: #E08A2C;
+  --amber-dim: #B96F1E;
+  --text-inverse: #EDEEF0;
+  --text-muted: #9AA0A8;
+  --danger: #C24A3F;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg-app);
+  font-family: var(--font-ui);
+  color: var(--text-inverse);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(10px + var(--safe-top)) calc(14px + var(--safe-right)) 10px calc(14px + var(--safe-left));
+  background: var(--chrome);
+  border-bottom: 1px solid var(--chrome-line);
+  z-index: 20;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border: 1.6px solid var(--text-inverse);
+  background-image:
+    linear-gradient(var(--chrome-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--chrome-line) 1px, transparent 1px);
+  background-size: 6px 6px;
+  border-radius: 3px;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scale-pill {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--chrome-line);
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.scale-pill:active {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+/* ---------- Canvas ---------- */
+
+.canvas-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--bg-app);
+}
+
+#board {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.empty-hint {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.empty-hint p { margin: 0; }
+.empty-hint.hidden { opacity: 0; }
+
+/* ---------- Toolbar ---------- */
+
+.toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(14px + var(--safe-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  background: var(--chrome);
+  border: 1px solid var(--chrome-line);
+  border-radius: 18px;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  z-index: 20;
+  max-width: calc(100vw - 24px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.toolbar::-webkit-scrollbar { display: none; }
+
+.tool-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--chrome-line);
+  margin: 4px 3px;
+  flex: 0 0 auto;
+}
+
+.tool-btn {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 58px;
+  padding: 8px 4px 7px;
+  background: transparent;
+  border: none;
+  border-radius: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.tool-btn svg {
+  width: 21px;
+  height: 21px;
+}
+
+.tool-btn[data-tool].is-active {
+  background: rgba(224, 138, 44, 0.14);
+  color: var(--amber);
+}
+
+.tool-btn.action:active {
+  background: var(--chrome-line);
+  color: var(--text-inverse);
+}
+
+.tool-btn[data-tool]:not(.is-active):active {
+  color: var(--text-inverse);
+}
+
+/* ---------- Settings bottom sheet ---------- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 16, 18, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 40;
+}
+
+.sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--chrome);
+  border: 1px solid var(--chrome-line);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  padding: 10px 20px calc(24px + var(--safe-bottom));
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+}
+
+.sheet-backdrop.open .sheet {
+  transform: translateY(0);
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--chrome-line);
+  margin: 6px auto 16px;
+}
+
+.sheet h2 {
+  font-size: 14px;
+  margin: 18px 0 2px;
+  color: var(--text-inverse);
+}
+
+.sheet h2:first-of-type { margin-top: 4px; }
+
+.sheet-sub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.option-chip {
+  padding: 11px 6px;
+  background: transparent;
+  border: 1px solid var(--chrome-line);
+  border-radius: 11px;
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.option-chip.is-selected {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(224, 138, 44, 0.1);
+}
+
+.sheet-close {
+  width: 100%;
+  margin-top: 22px;
+  padding: 13px;
+  background: var(--amber);
+  border: none;
+  border-radius: 12px;
+  color: #241505;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: absolute;
+  left: 50%;
+  top: calc(14px + var(--safe-top) + 46px);
+  transform: translate(-50%, -8px);
+  background: var(--chrome);
+  border: 1px solid var(--chrome-line);
+  color: var(--text-inverse);
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 50;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

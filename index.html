@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Papel Quadriculado</title>
+<meta name="description" content="Papel quadriculado digital para desenhar ambientes e cotar medidas, direto no celular ou tablet.">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#23262B">
+
+<!-- iOS PWA support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quadriculado">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">Papel Quadriculado</span>
+  </div>
+  <button id="scaleBtn" class="scale-pill" type="button" aria-haspopup="dialog">
+    <span id="scaleLabel">1 quadrado = 10 cm</span>
+  </button>
+</header>
+
+<main class="canvas-wrap">
+  <canvas id="board"></canvas>
+  <div id="emptyHint" class="empty-hint">
+    <p>Arraste o dedo para desenhar uma parede.</p>
+    <p>Use dois dedos para mover e dar zoom na folha.</p>
+  </div>
+</main>
+
+<nav class="toolbar" id="toolbar">
+  <button class="tool-btn" data-tool="draw" aria-label="Desenhar" title="Desenhar">
+    <svg viewBox="0 0 24 24"><path d="M4 20 L4 16 L15 5 L19 9 L8 20 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 7 L17 11" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span>Desenhar</span>
+  </button>
+  <button class="tool-btn" data-tool="measure" aria-label="Cotar" title="Cotar">
+    <svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6" stroke="currentColor" stroke-width="1.8"/><line x1="4" y1="18" x2="7" y2="15.4" stroke="currentColor" stroke-width="1.8"/><line x1="20" y1="6" x2="17" y2="8.6" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span>Cotar</span>
+  </button>
+  <button class="tool-btn" data-tool="erase" aria-label="Apagar" title="Apagar">
+    <svg viewBox="0 0 24 24"><path d="M17 20H7l-4-4a1.5 1.5 0 0 1 0-2.1L13 3.8a1.5 1.5 0 0 1 2.1 0l4.1 4.1a1.5 1.5 0 0 1 0 2.1L11 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span>Apagar</span>
+  </button>
+  <button class="tool-btn" data-tool="pan" aria-label="Mover" title="Mover">
+    <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M7 7l-4 5 4 5M17 7l4 5-4 5M7 17l5 4 5-4M7 7l5-4 5 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <span>Mover</span>
+  </button>
+
+  <span class="tool-divider" aria-hidden="true"></span>
+
+  <button class="tool-btn action" id="undoBtn" aria-label="Desfazer" title="Desfazer">
+    <svg viewBox="0 0 24 24"><path d="M8 7 3 12l5 5M3 12h11a6 6 0 0 1 0 12h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Desfazer</span>
+  </button>
+  <button class="tool-btn action" id="redoBtn" aria-label="Refazer" title="Refazer">
+    <svg viewBox="0 0 24 24"><path d="M16 7l5 5-5 5M21 12H10a6 6 0 0 0 0 12h1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Refazer</span>
+  </button>
+
+  <span class="tool-divider" aria-hidden="true"></span>
+
+  <button class="tool-btn action" id="exportBtn" aria-label="Salvar imagem" title="Salvar imagem">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Salvar</span>
+  </button>
+  <button class="tool-btn action" id="clearBtn" aria-label="Limpar tudo" title="Limpar tudo">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Limpar</span>
+  </button>
+</nav>
+
+<div class="sheet-backdrop" id="settingsBackdrop">
+  <section class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-label="Configurações da folha">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <h2>Escala da folha</h2>
+    <p class="sheet-sub">Quanto vale cada quadrado do papel no mundo real.</p>
+
+    <div class="option-grid" id="scaleOptions">
+      <button class="option-chip" data-value="5">5 cm</button>
+      <button class="option-chip" data-value="10">10 cm</button>
+      <button class="option-chip" data-value="20">20 cm</button>
+      <button class="option-chip" data-value="50">50 cm</button>
+      <button class="option-chip" data-value="100">1 m</button>
+      <button class="option-chip" data-value="200">2 m</button>
+    </div>
+
+    <h2>Encaixe na grade</h2>
+    <p class="sheet-sub">Onde os pontos ficam presos ao desenhar.</p>
+    <div class="option-grid" id="snapOptions">
+      <button class="option-chip" data-value="1">Quadrado inteiro</button>
+      <button class="option-chip" data-value="2">Meio quadrado</button>
+      <button class="option-chip" data-value="4">Um quarto</button>
+    </div>
+
+    <button class="sheet-close" id="closeSettings" type="button">Pronto</button>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
